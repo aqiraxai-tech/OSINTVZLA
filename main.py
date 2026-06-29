@@ -6,7 +6,7 @@ import aiohttp
 # --- CONFIGURACIÓN ---
 APP_ID = "9237"
 TOKEN_API = "3e0d7aad27f8a47e9bcebcee294671c7"
-BOT_TOKEN = "MTQ4ODA0ODIxMTU1NjgyNzE4OA.GXRkuu.gCz8zWqqih05BXesbME2Ej4xjJ8sP1ClVL3XhM"
+BOT_TOKEN = "MTUxNTUwMjM5NzkxNTY2MDM3MA.GG4Ull.8rP1X7j-BL7N9tdfeKczpRijJLw2m3obguaxGQ"
 ROL_AUTORIZADO = "osint"
 # ---------------------
 
