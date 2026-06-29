@@ -2,11 +2,13 @@ import discord
 from discord import app_commands
 from discord.ext import commands
 import aiohttp
+import os  # <-- Obligado para leer la variable de Railway
 
 # --- CONFIGURACIÓN ---
 APP_ID = "9237"
 TOKEN_API = "3e0d7aad27f8a47e9bcebcee294671c7"
-BOT_TOKEN = "MTUxNTUwMjM5NzkxNTY2MDM3MA.GG4Ull.8rP1X7j-BL7N9tdfeKczpRijJLw2m3obguaxGQ"
+# El token del bot ahora se busca en el sistema operativo
+BOT_TOKEN = os.getenv("BOT_TOKEN") 
 ROL_AUTORIZADO = "osint"
 # ---------------------
 
@@ -30,7 +32,6 @@ async def on_ready():
 @bot.tree.command(name="cedula", description="Consulta datos CNE")
 @app_commands.checks.has_role(ROL_AUTORIZADO)
 async def cedula(interaction: discord.Interaction, nro: str):
-    # Esto evita el error de "La aplicación no respondió"
     await interaction.response.defer()
 
     if not nro.isdigit():
@@ -53,15 +54,12 @@ async def cedula(interaction: discord.Interaction, nro: str):
                 
                 embed = discord.Embed(title=f"🔎 Registro CNE: {nro}", color=0x2b2d31)
                 
-                # Nombre
                 nombre = f"{d.get('primer_nombre', '')} {d.get('segundo_nombre', '')} {d.get('primer_apellido', '')} {d.get('segundo_apellido', '')}"
                 embed.add_field(name="👤 Nombre Completo", value=nombre.upper() or "N/A", inline=False)
                 
-                # Info extra
                 embed.add_field(name="🆔 RIF", value=d.get('rif', 'N/A'), inline=True)
                 embed.add_field(name="🌎 Nacionalidad", value=d.get('nacionalidad', 'V'), inline=True)
                 
-                # CNE
                 embed.add_field(name="📍 Estado", value=c.get('estado', 'N/A'), inline=True)
                 embed.add_field(name="🏙️ Municipio", value=c.get('municipio', 'N/A'), inline=True)
                 embed.add_field(name="🗺️ Parroquia", value=c.get('parroquia', 'N/A'), inline=True)
@@ -80,4 +78,9 @@ async def cedula_error(interaction: discord.Interaction, error):
     if isinstance(error, app_commands.MissingRole):
         await interaction.response.send_message("🚫 Sapegato, necesitas el rol 'osint'.", ephemeral=True)
 
-bot.run(BOT_TOKEN)
+# Verificación para que no explote si se te olvida poner la variable
+if __name__ == "__main__":
+    if not BOT_TOKEN:
+        print("❌ ¡Hay vale! Te falta configurar la variable 'BOT_TOKEN' en Railway.")
+    else:
+        bot.run(BOT_TOKEN)
