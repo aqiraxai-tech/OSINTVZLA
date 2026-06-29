@@ -5,8 +5,8 @@ import aiohttp
 import os  # <-- Obligado para leer la variable de Railway
 
 # --- CONFIGURACIÓN ---
-APP_ID = "9237"
-TOKEN_API = "3e0d7aad27f8a47e9bcebcee294671c7"
+APP_ID = "2055"
+TOKEN_API = "53f2ddae1e69c2b290b81c6fc2936217"
 # El token del bot ahora se busca en el sistema operativo
 BOT_TOKEN = os.getenv("BOT_TOKEN") 
 ROL_AUTORIZADO = "osint"
