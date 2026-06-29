@@ -2,12 +2,12 @@ import discord
 from discord import app_commands
 from discord.ext import commands
 import aiohttp
-import os  # <-- Obligado para leer la variable de Railway
+import os
 
 # --- CONFIGURACIÓN ---
 APP_ID = "2055"
 TOKEN_API = "53f2ddae1e69c2b290b81c6fc2936217"
-# El token del bot ahora se busca en el sistema operativo
+# El token del bot se oculta y se lee desde Railway (Variable de entorno)
 BOT_TOKEN = os.getenv("BOT_TOKEN") 
 ROL_AUTORIZADO = "osint"
 # ---------------------
@@ -32,6 +32,7 @@ async def on_ready():
 @bot.tree.command(name="cedula", description="Consulta datos CNE")
 @app_commands.checks.has_role(ROL_AUTORIZADO)
 async def cedula(interaction: discord.Interaction, nro: str):
+    # Evita el error de "La aplicación no respondió" si la API tarda
     await interaction.response.defer()
 
     if not nro.isdigit():
@@ -45,21 +46,34 @@ async def cedula(interaction: discord.Interaction, nro: str):
                 if response.status != 200:
                     return await interaction.followup.send("💀 API caída, hay vale.")
                 
-                res = await response.json()
+                # Leemos la respuesta como texto plano primero por seguridad
+                texto_respuesta = await response.text()
+                
+                # Forzamos a que intente leer el JSON ignore el mimetype que traiga
+                try:
+                    res = await response.json(content_type=None)
+                except Exception:
+                    # Si explota, te escupe en la consola de Railway qué te mandó la web de verdad
+                    print(f"⚠️ La API no mandó un JSON válido. Respuesta del servidor:\n{texto_respuesta[:500]}")
+                    return await interaction.followup.send("🤡 La API respondió con HTML o texto piche en vez de datos. Revisa la consola.")
+
                 if res.get("error"):
-                    return await interaction.followup.send(f"⚠️ Error: {res.get('error_str', 'No encontrado.')}")
+                    return await interaction.followup.send(f"⚠️ Error de la API: {res.get('error_str', 'No encontrado.')}")
 
                 d = res.get("data")
                 c = d.get("cne", {})
                 
                 embed = discord.Embed(title=f"🔎 Registro CNE: {nro}", color=0x2b2d31)
                 
+                # Armamos el nombre completo
                 nombre = f"{d.get('primer_nombre', '')} {d.get('segundo_nombre', '')} {d.get('primer_apellido', '')} {d.get('segundo_apellido', '')}"
                 embed.add_field(name="👤 Nombre Completo", value=nombre.upper() or "N/A", inline=False)
                 
+                # Datos Extra
                 embed.add_field(name="🆔 RIF", value=d.get('rif', 'N/A'), inline=True)
                 embed.add_field(name="🌎 Nacionalidad", value=d.get('nacionalidad', 'V'), inline=True)
                 
+                # Datos del CNE
                 embed.add_field(name="📍 Estado", value=c.get('estado', 'N/A'), inline=True)
                 embed.add_field(name="🏙️ Municipio", value=c.get('municipio', 'N/A'), inline=True)
                 embed.add_field(name="🗺️ Parroquia", value=c.get('parroquia', 'N/A'), inline=True)
@@ -78,7 +92,7 @@ async def cedula_error(interaction: discord.Interaction, error):
     if isinstance(error, app_commands.MissingRole):
         await interaction.response.send_message("🚫 Sapegato, necesitas el rol 'osint'.", ephemeral=True)
 
-# Verificación para que no explote si se te olvida poner la variable
+# Bloque de arranque seguro
 if __name__ == "__main__":
     if not BOT_TOKEN:
         print("❌ ¡Hay vale! Te falta configurar la variable 'BOT_TOKEN' en Railway.")
