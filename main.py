@@ -24,7 +24,7 @@ bot = MiBot()
 @bot.event
 async def on_ready():
     await bot.change_presence(activity=discord.Streaming(
-        name="Aqirax",
+        name="Conectado a Bases de Datos",
         url="https://www.twitch.tv/xentury_oficial"
     ))
     print(f"✅ {bot.user.name} activo, menor.")
@@ -71,7 +71,7 @@ async def cedula(interaction: discord.Interaction, nro: str):
                 
                 # Datos Extra
                 embed.add_field(name="🆔 RIF", value=d.get('rif', 'N/A'), inline=True)
-                embed.add_field(name="🌎 Nacionalidad", value=d.get('nacionalidad', 'V'), inline=True)
+                embed.add_field(name="🌎 Nacionalidad", value=d.get('nacionalidad', '🇻🇪 Venezolana'), inline=True)
                 
                 # Datos del CNE
                 embed.add_field(name="📍 Estado", value=c.get('estado', 'N/A'), inline=True)
